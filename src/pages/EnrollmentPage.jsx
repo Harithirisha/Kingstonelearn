@@ -389,7 +389,8 @@ function EnrollmentPage() {
   const classes = useStyles();
   const selectedCourseId = localStorage.getItem('selectedCourseId');
   const selectedBatchId = localStorage.getItem('selectedBatchId');
-  const professorId = localStorage.getItem('professorId'); // Assuming professorId is stored in localStorage
+  const userId = localStorage.getItem('userId');
+  const token = localStorage.getItem('token');
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -401,6 +402,34 @@ function EnrollmentPage() {
   const [showBatches, setShowBatches] = useState(false);
   const [checkedBatchIndex, setCheckedBatchIndex] = useState(null);
   const [enrollButtonEnabled, setEnrollButtonEnabled] = useState(false);
+  const [professorId, setProfessorId] = useState(null);
+
+  useEffect(() => {
+    const fetchProfessorId = async () => {
+      try {
+        const response = await fetch(`https://localhost:7282/api/Courses/${selectedCourseId}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const courseData = await response.json();
+        setProfessorId(courseData.professorId);
+      } catch (err) {
+        console.error('Fetch error:', err);
+        setError(err.message);
+      }
+    };
+
+    if (selectedCourseId) {
+      fetchProfessorId();
+    }
+  }, [selectedCourseId, token]);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -518,16 +547,22 @@ function EnrollmentPage() {
   const handlePayAndEnroll = async () => {
     const storedToken = localStorage.getItem('token');
 
+    console.log(parseInt(selectedCourseId), parseInt(selectedBatchId), parseInt(professorId), parseInt(userId));
+  
     const enrollmentData = {
-      CourseId: parseInt(selectedCourseId),
-      BatchId: parseInt(selectedBatchId),
-      ProfessorId: parseInt(professorId), // Corrected typo here
-      RegistrarStatus: 'Pending',
-      TaskCompleted: null, // Set other properties to null
-      CompletionStatus: null // Set other properties to null
+      enrollment: {  // Include the enrollment object
+        courseId: parseInt(selectedCourseId),
+        batchId: parseInt(selectedBatchId),
+        professorId: parseInt(professorId),
+        studentId: parseInt(userId),
+        registrarStatus: 'Pending',
+        taskCompleted: 0,
+        completionStatus: false
+      }
     };
-
+  
     try {
+      console.log(enrollmentData);
       const enrollmentResponse = await fetch(`https://localhost:7282/api/Enrollments`, {
         method: 'POST',
         headers: {
@@ -537,11 +572,13 @@ function EnrollmentPage() {
         body: JSON.stringify(enrollmentData)
       });
 
+      console.log("Enrollment response",enrollmentResponse);
+  
       if (!enrollmentResponse.ok) {
         const errorMessage = await enrollmentResponse.text();
         throw new Error(`HTTP error! Status: ${enrollmentResponse.status}. Message: ${errorMessage}`);
       }
-
+  
       setOpenDialog(false);
       // Handle success, maybe redirect to a success page or show a success message
     } catch (err) {
@@ -549,7 +586,7 @@ function EnrollmentPage() {
       setError(err.message);
     }
   };
-
+  
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
