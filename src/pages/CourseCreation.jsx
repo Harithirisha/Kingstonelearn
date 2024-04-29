@@ -36,26 +36,16 @@ const useStyles = makeStyles((theme) => ({
   actionButton: {
     marginTop: theme.spacing(2),
   },
-  uploadContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: theme.spacing(2),
-  },
-  uploadButton: {
-    marginRight: theme.spacing(2),
-  },
 }));
 
 const CourseCreation = () => {
   const classes = useStyles();
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
 
   const [courseData, setCourseData] = useState({
     courseName: '',
     courseDescription: '',
-    courseImage: null,
     fees: '',
     lessonCount: '',
     professorStatus: 'Active',
@@ -75,30 +65,25 @@ const CourseCreation = () => {
     setCourseData(prevState => ({ ...prevState, [name]: value }));
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setSelectedFile(file);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const formData = new FormData();
-      formData.append('CourseName', courseData.courseName);
-      formData.append('CourseDescription', courseData.courseDescription);
-      formData.append('CourseImage', selectedFile);  
-      formData.append('Fees', courseData.fees);
-      formData.append('LessonCount', courseData.lessonCount);
-      formData.append('ProfessorStatus', courseData.professorStatus);
-      formData.append('CourseDuration', courseData.courseDuration);
-      formData.append('ProfessorId', courseData.professorId);
-      formData.append('CourseStatus', 'Pending');
-      
-      const response = await axios.post('https://localhost:7282/api/Courses', formData, {
+      const jsonData = {
+        CourseName: courseData.courseName,
+        CourseDescription: courseData.courseDescription,
+        Fees: parseInt(courseData.fees), // Ensure fees is converted to integer
+        CourseDuration: parseInt(courseData.courseDuration), // Ensure courseDuration is converted to integer
+        LessonCount: parseInt(courseData.lessonCount), // Ensure lessonCount is converted to integer
+        ProfessorStatus: courseData.professorStatus,
+        ProfessorId: parseInt(courseData.professorId), // Ensure professorId is converted to integer
+        CourseStatus: 'Pending'
+      };
+  
+      const response = await axios.post('https://localhost:7282/api/Courses', jsonData, {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'application/json'
         }
       });
       console.log('Response:', response.data);
@@ -158,37 +143,6 @@ const CourseCreation = () => {
                   multiline
                   minRows={4}
                 />
-                <Box className={classes.uploadContainer}>
-                  <input
-                    type="file"
-                    id="upload-file"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                  />
-                  <label htmlFor="upload-file">
-                    <Button 
-                      variant="contained" 
-                      color="primary" 
-                      component="span" 
-                      className={classes.uploadButton}
-                    >
-                      Upload File
-                    </Button>
-                  </label>
-                  {selectedFile && (
-                    <TextField
-                      className={classes.textField}
-                      type="text"
-                      name="courseImageName"
-                      label="Selected File"
-                      variant="outlined"
-                      value={selectedFile.name}
-                      fullWidth
-                      disabled
-                    />
-                  )}
-                </Box>
                 <TextField
                   className={classes.textField}
                   type="text"

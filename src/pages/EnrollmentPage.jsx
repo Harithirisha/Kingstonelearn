@@ -403,6 +403,7 @@ function EnrollmentPage() {
   const [checkedBatchIndex, setCheckedBatchIndex] = useState(null);
   const [enrollButtonEnabled, setEnrollButtonEnabled] = useState(false);
   const [professorId, setProfessorId] = useState(null);
+  const [enrollmentSuccessful, setEnrollmentSuccessful] = useState(false); // New state variable to track enrollment success
 
   useEffect(() => {
     const fetchProfessorId = async () => {
@@ -536,9 +537,9 @@ function EnrollmentPage() {
   }, [selectedCourseId, showBatches]);
 
   useEffect(() => {
-    // Enable enroll button only when a batch is selected
-    setEnrollButtonEnabled(checkedBatchIndex !== null);
-  }, [checkedBatchIndex]);
+    // Enable enroll button only when a batch is selected and enrollment is not successful
+    setEnrollButtonEnabled(checkedBatchIndex !== null && !enrollmentSuccessful);
+  }, [checkedBatchIndex, enrollmentSuccessful]);
 
   const handleEnrollClick = () => {
     setOpenDialog(true);
@@ -547,22 +548,19 @@ function EnrollmentPage() {
   const handlePayAndEnroll = async () => {
     const storedToken = localStorage.getItem('token');
 
-    console.log(parseInt(selectedCourseId), parseInt(selectedBatchId), parseInt(professorId), parseInt(userId));
-  
     const enrollmentData = {
-      enrollment: {  // Include the enrollment object
-        courseId: parseInt(selectedCourseId),
-        batchId: parseInt(selectedBatchId),
-        professorId: parseInt(professorId),
-        studentId: parseInt(userId),
+      enrollment: {
+        courseId: selectedCourseId,
+        batchId: selectedBatchId,
+        professorId: professorId,
+        studentId: userId,
         registrarStatus: 'Pending',
         taskCompleted: 0,
         completionStatus: false
       }
     };
-  
+
     try {
-      console.log(enrollmentData);
       const enrollmentResponse = await fetch(`https://localhost:7282/api/Enrollments`, {
         method: 'POST',
         headers: {
@@ -572,13 +570,14 @@ function EnrollmentPage() {
         body: JSON.stringify(enrollmentData)
       });
 
-      console.log("Enrollment response",enrollmentResponse);
-  
       if (!enrollmentResponse.ok) {
         const errorMessage = await enrollmentResponse.text();
         throw new Error(`HTTP error! Status: ${enrollmentResponse.status}. Message: ${errorMessage}`);
       }
-  
+
+      // Update state to indicate enrollment success
+      setEnrollmentSuccessful(true);
+
       setOpenDialog(false);
       // Handle success, maybe redirect to a success page or show a success message
     } catch (err) {

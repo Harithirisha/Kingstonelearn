@@ -1,82 +1,27 @@
-// import React from 'react';
-// import { Link } from 'react-router-dom';
-// import { AppBar, Toolbar, Button, Grid, Typography } from '@mui/material';
-// import { styled } from '@mui/system';
-
-// const StyledAppBar = styled(AppBar)(({ theme }) => ({
-//   marginBottom: theme.spacing(3),
-// }));
-
-// const StyledButton = styled(Button)(({ theme }) => ({
-//   marginRight: theme.spacing(2),
-// }));
-
-// function CourseManagement() {
-//   return (
-//     <div>
-//       <StyledAppBar position="static">
-//         <Toolbar>
-//           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-//             Course Management Dashboard
-//           </Typography>
-//           <Link to="/professor/create-course">
-//             <StyledButton color="inherit">Create Course</StyledButton>
-//           </Link>
-//           <Link to="/professor/view-courses">
-//             <StyledButton color="inherit">View Courses</StyledButton>
-//           </Link>
-//           <Link to="/professor/update-course">
-//             <StyledButton color="inherit">Update Course</StyledButton>
-//           </Link>
-//           <Link to="/professor/delete-course">
-//             <StyledButton color="inherit">Delete</StyledButton>
-//           </Link>
-//         </Toolbar>
-//       </StyledAppBar>
-      
-//       <Grid container spacing={3}>
-//         <Grid item xs={12} sm={6} md={3}>
-//           <Link to="/professor/create-course">
-//             <Button variant="contained" color="primary" fullWidth>
-//               Create Course
-//             </Button>
-//           </Link>
-//         </Grid>
-//         <Grid item xs={12} sm={6} md={3}>
-//           <Link to="/professor/view-courses">
-//             <Button variant="contained" color="primary" fullWidth>
-//               View Courses
-//             </Button>
-//           </Link>
-//         </Grid>
-//         <Grid item xs={12} sm={6} md={3}>
-//           <Link to="/professor/update-course">
-//             <Button variant="contained" color="primary" fullWidth>
-//               Update Course
-//             </Button>
-//           </Link>
-//         </Grid>
-//         <Grid item xs={12} sm={6} md={3}>
-//           <Link to="/professor/delete-course">
-//             <Button variant="contained" color="primary" fullWidth>
-//               Delete
-//             </Button>
-//           </Link>
-//         </Grid>
-//       </Grid>
-//     </div>
-//   );
-// }
-
-// export default CourseManagement;
-
-
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Button, Grid, Typography } from '@mui/material';
 
 function CourseManagement() {
+  const [pendingCourses, setPendingCourses] = useState([]);
+
+  useEffect(() => {
+    fetchPendingCourses();
+  }, []);
+
+  const fetchPendingCourses = async () => {
+    try {
+      const response = await fetch('https://localhost:7282/api/Courses?CourseStatus=Pending');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setPendingCourses(data);
+    } catch (error) {
+      console.error('Error fetching pending courses:', error);
+    }
+  };
+
   return (
     <div>
       <AppBar position="static" style={{ width: '100%' }}>
@@ -88,34 +33,15 @@ function CourseManagement() {
       </AppBar>
 
       <Grid container spacing={3} style={{ marginTop: '1.5rem' }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Link to="/professor/create-course">
-            <Button variant="contained" color="primary" fullWidth>
-              Create Course
-            </Button>
-          </Link>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Link to="/professor/view-courses">
-            <Button variant="contained" color="primary" fullWidth>
-              View Courses
-            </Button>
-          </Link>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Link to="/professor/update-course">
-            <Button variant="contained" color="primary" fullWidth>
-              Update Course
-            </Button>
-          </Link>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Link to="/professor/delete-course">
-            <Button variant="contained" color="primary" fullWidth>
-              Delete
-            </Button>
-          </Link>
-        </Grid>
+        {pendingCourses.map(course => (
+          <Grid item xs={12} sm={6} md={3} key={course.courseId}>
+            <Link to={`/professor/view-courses/${course.courseId}`}>
+              <Button variant="contained" color="primary" fullWidth>
+                {course.courseName}
+              </Button>
+            </Link>
+          </Grid>
+        ))}
       </Grid>
     </div>
   );
