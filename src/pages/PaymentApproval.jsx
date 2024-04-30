@@ -24,13 +24,18 @@ const useStyles = makeStyles((theme) => ({
 function EnrollmentList() {
   const classes = useStyles();
   const [enrollments, setEnrollments] = useState([]);
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchEnrollments();
   }, []);
 
   const fetchEnrollments = () => {
-    fetch('https://localhost:7282/api/Enrollments?registrarStatus=Pending')
+    fetch('https://localhost:7282/api/Enrollments?registrarStatus=Pending', {
+      headers: {
+        Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+      },
+    })
       .then(response => response.json())
       .then(data => {
         setEnrollments(data);
@@ -38,10 +43,27 @@ function EnrollmentList() {
       .catch(error => console.error('Error fetching enrollments:', error));
   };
 
-  const handleAction = (id, action) => {
-    // Implement action handling here
+  const handleAction = (enrollmentId, action) => {
+    const url = `https://localhost:7282/api/Enrollments/${action}?enrollmentId=${enrollmentId}`;
+  
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => {
+        if (response.ok) {
+          // If the action is successful, update the enrollments list
+          fetchEnrollments();
+        } else {
+          throw new Error('Failed to perform action');
+        }
+      })
+      .catch(error => console.error('Error performing action:', error));
   };
-
+  
   return (
     <div className={classes.root}>
       <AppBar position="fixed" className={classes.appBar}>
@@ -102,7 +124,11 @@ function FetchCourseName({ courseId }) {
   const [courseName, setCourseName] = useState('');
 
   useEffect(() => {
-    fetch(`https://localhost:7282/api/Courses/${courseId}`)
+    fetch(`https://localhost:7282/api/Courses/${courseId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // Include the token in the Authorization header
+      },
+    })
       .then(response => response.json())
       .then(data => {
         setCourseName(data.courseName);
@@ -117,7 +143,11 @@ function FetchStudentName({ studentId }) {
   const [studentName, setStudentName] = useState('');
 
   useEffect(() => {
-    fetch(`https://localhost:7282/api/Students/${studentId}`)
+    fetch(`https://localhost:7282/api/Students/${studentId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // Include the token in the Authorization header
+      },
+    })
       .then(response => response.json())
       .then(data => {
         setStudentName(data.name);
