@@ -62,7 +62,8 @@
 //   useEffect(() => {
 //     const storedToken = localStorage.getItem('token');
 
-//     fetch('https://localhost:7282/api/Courses', {
+//     // Fetch enrollment data
+//     fetch('https://localhost:7282/api/Enrollments', {
 //       headers: {
 //         Authorization: `Bearer ${storedToken}`
 //       }
@@ -73,33 +74,38 @@
 //         }
 //         return response.json();
 //       })
-//       .then(async (data) => {
-//         const enrichedCourses = await Promise.all(data.map(async (course) => {
-//           const professorResponse = await fetch(`https://localhost:7282/api/Professors/${course.professorId}`, {
-//             headers: {
-//               Authorization: `Bearer ${storedToken}`
+//       .then(enrollments => {
+//         // Fetch course data
+//         fetch('https://localhost:7282/api/Courses', {
+//           headers: {
+//             Authorization: `Bearer ${storedToken}`
+//           }
+//         })
+//           .then(response => {
+//             if (!response.ok) {
+//               throw new Error('Network response was not ok');
 //             }
+//             return response.json();
+//           })
+//           .then(coursesData => {
+//             // Filter out courses that are already enrolled by the student and are in 'Approved' status
+//             const filteredCourses = coursesData.filter(course => {
+//               const isEnrolled = enrollments.some(enrollment => enrollment.courseId === course.courseId);
+//               return course.courseStatus === 'Approved' && !isEnrolled;
+//             });
+//             setCourses(filteredCourses);
+//             setLoading(false);
+//           })
+//           .catch(error => {
+//             setError(error);
+//             setLoading(false);
 //           });
-//           const professorData = await professorResponse.json();
-
-//           return {
-//             ...course,
-//             professorName: professorData.name,
-//           };
-//         }));
-
-//         setCourses(enrichedCourses);
-//         setLoading(false);
 //       })
 //       .catch(error => {
 //         setError(error);
 //         setLoading(false);
 //       });
 //   }, []);
-
-//   const handleViewLessons = (courseId) => {
-//     localStorage.setItem('selectedCourseId', courseId);
-//   };
 
 //   if (loading) {
 //     return <div>Loading...</div>;
@@ -168,7 +174,6 @@
 //                   variant="contained" 
 //                   color="primary" 
 //                   style={{ marginBottom: '10px' }}
-//                   onClick={() => handleViewLessons(course.courseId)}
 //                 >
 //                   View Lessons
 //                 </Button>
@@ -182,8 +187,6 @@
 // }
 
 // export default StudentsDashboard;
-
-
 
 
 import React, { useState, useEffect } from 'react';
@@ -250,7 +253,8 @@ function StudentsDashboard() {
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
 
-    fetch('https://localhost:7282/api/Courses', {
+    // Fetch enrollment data
+    fetch('https://localhost:7282/api/Enrollments', {
       headers: {
         Authorization: `Bearer ${storedToken}`
       }
@@ -261,35 +265,64 @@ function StudentsDashboard() {
         }
         return response.json();
       })
-      .then(async (data) => {
-        const approvedCourses = data.filter(course => course.courseStatus === 'Approved');
-
-        const enrichedCourses = await Promise.all(approvedCourses.map(async (course) => {
-          const professorResponse = await fetch(`https://localhost:7282/api/Professors/${course.professorId}`, {
-            headers: {
-              Authorization: `Bearer ${storedToken}`
+      .then(enrollments => {
+        // Fetch course data
+        fetch('https://localhost:7282/api/Courses', {
+          headers: {
+            Authorization: `Bearer ${storedToken}`
+          }
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
             }
+            return response.json();
+          })
+          .then(coursesData => {
+            // Fetch professors data
+            fetch('https://localhost:7282/api/Professors', {
+              headers: {
+                Authorization: `Bearer ${storedToken}`
+              }
+            })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('Network response was not ok');
+                }
+                return response.json();
+              })
+              .then(professorsData => {
+                // Map professor data to course data
+                const coursesWithProfessors = coursesData.map(course => {
+                  const professor = professorsData.find(professor => professor.id === course.professorId);
+                  return {
+                    ...course,
+                    professorName: professor ? professor.name : 'Unknown',
+                  };
+                });
+                // Filter out courses that are already enrolled by the student and are in 'Approved' status
+                const filteredCourses = coursesWithProfessors.filter(course => {
+                  const isEnrolled = enrollments.some(enrollment => enrollment.courseId === course.courseId);
+                  return course.courseStatus === 'Approved' && !isEnrolled;
+                });
+                setCourses(filteredCourses);
+                setLoading(false);
+              })
+              .catch(error => {
+                setError(error);
+                setLoading(false);
+              });
+          })
+          .catch(error => {
+            setError(error);
+            setLoading(false);
           });
-          const professorData = await professorResponse.json();
-
-          return {
-            ...course,
-            professorName: professorData.name,
-          };
-        }));
-
-        setCourses(enrichedCourses);
-        setLoading(false);
       })
       .catch(error => {
         setError(error);
         setLoading(false);
       });
   }, []);
-
-  const handleViewLessons = (courseId) => {
-    localStorage.setItem('selectedCourseId', courseId);
-  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -358,7 +391,6 @@ function StudentsDashboard() {
                   variant="contained" 
                   color="primary" 
                   style={{ marginBottom: '10px' }}
-                  onClick={() => handleViewLessons(course.courseId)}
                 >
                   View Lessons
                 </Button>

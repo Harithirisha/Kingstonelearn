@@ -16,7 +16,8 @@ import LessonCreation from './pages/LessonManagement';
 import CourseApproval from './pages/CourseApproval';
 import BatchCreation from './pages/BatchManagement';
 import EnrollmentPage from './pages/EnrollmentPage';
-import CourseDetails from './pages/Mycourses';
+import EnrollmentTable from './pages/Mycourses';
+import EnrollmentList from './pages/PaymentApproval';
 
 function App() {
   return (
@@ -38,7 +39,8 @@ function App() {
           <Route exact path='/course-approvals' element={<CourseApproval/>}/>
           <Route exact path='/professor/manage-batches' element={<BatchCreation/>}/>
           <Route exact path='/students/enrollment-page' element={<EnrollmentPage />} />
-          <Route exact path='/students/my-courses' element={<CourseDetails />} />
+          <Route exact path='/students/my-courses' element={<EnrollmentTable />} />
+          <Route exact path='/payment-approvals' element={<EnrollmentList/>}/>
         </Routes>
       </BrowserRouter>
     </div>
