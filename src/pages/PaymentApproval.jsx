@@ -1,3 +1,175 @@
+// import React, { useState, useEffect } from 'react';
+// import { makeStyles, Card, CardContent, Typography, AppBar, Toolbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button } from '@material-ui/core';
+
+// const useStyles = makeStyles((theme) => ({
+//   root: {
+//     flexGrow: 1,
+//   },
+//   appBar: {
+//     width: '100%', // Set AppBar width to cover entire page
+//     position: 'fixed', // Position AppBar at the top of the page
+//   },
+//   title: {
+//     marginLeft: theme.spacing(2), // Add margin to separate the title from the edge of AppBar
+//   },
+//   table: {
+//     minWidth: 650,
+//     marginTop: theme.spacing(8), // Add margin top to prevent content from being hidden behind the AppBar
+//   },
+//   actionButton: {
+//     margin: theme.spacing(1),
+//   },
+// }));
+
+// function EnrollmentList() {
+//   const classes = useStyles();
+//   const [enrollments, setEnrollments] = useState([]);
+//   const token = localStorage.getItem('token');
+
+//   useEffect(() => {
+//     fetchEnrollments();
+//   }, []);
+
+//   const fetchEnrollments = () => {
+//     fetch('https://localhost:7282/api/Enrollments?registrarStatus=Pending', {
+//       headers: {
+//         Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+//       },
+//     })
+//       .then(response => response.json())
+//       .then(data => {
+//         setEnrollments(data);
+//       })
+//       .catch(error => console.error('Error fetching enrollments:', error));
+//   };
+
+//   const handleAction = (enrollmentId, action) => {
+//     const url = `https://localhost:7282/api/Enrollments/${action}?enrollmentId=${enrollmentId}`;
+  
+//     fetch(url, {
+//       method: 'POST',
+//       headers: {
+//         'Authorization': `Bearer ${token}`,
+//         'Content-Type': 'application/json'
+//       }
+//     })
+//       .then(response => {
+//         if (response.ok) {
+//           // If the action is successful, update the enrollments list
+//           fetchEnrollments();
+//         } else {
+//           throw new Error('Failed to perform action');
+//         }
+//       })
+//       .catch(error => console.error('Error performing action:', error));
+//   };
+  
+//   return (
+//     <div className={classes.root}>
+//       <AppBar position="fixed" className={classes.appBar}>
+//         <Toolbar>
+//           <Typography variant="h6" className={classes.title}>
+//             Payment List
+//           </Typography>
+//         </Toolbar>
+//       </AppBar>
+//       <TableContainer>
+//         <Table className={classes.table} aria-label="enrollment table">
+//           <TableHead>
+//             <TableRow>
+//               <TableCell>Course Name</TableCell>
+//               <TableCell>Student Name</TableCell>
+//               <TableCell>Status</TableCell>
+//               <TableCell>Actions</TableCell>
+//             </TableRow>
+//           </TableHead>
+//           <TableBody>
+//             {enrollments.map((enrollment, index) => (
+//               <TableRow key={index}>
+//                 <TableCell>{enrollment.courseId && (
+//                   <FetchCourseName courseId={enrollment.courseId} />
+//                 )}</TableCell>
+//                 <TableCell>{enrollment.studentId && (
+//                   <FetchStudentName studentId={enrollment.studentId} />
+//                 )}</TableCell>
+//                 <TableCell>{enrollment.registrarStatus}</TableCell>
+//                 <TableCell>
+//                   <Button
+//                     variant="contained"
+//                     color="primary"
+//                     className={classes.actionButton}
+//                     onClick={() => handleAction(enrollment.id, 'Approve')}
+//                   >
+//                     Approve
+//                   </Button>
+//                   <Button
+//                     variant="contained"
+//                     color="secondary"
+//                     className={classes.actionButton}
+//                     onClick={() => handleAction(enrollment.id, 'Reject')}
+//                   >
+//                     Reject
+//                   </Button>
+//                 </TableCell>
+//               </TableRow>
+//             ))}
+//           </TableBody>
+//         </Table>
+//       </TableContainer>
+//     </div>
+//   );
+// }
+
+// function FetchCourseName({ courseId }) {
+//   const [courseName, setCourseName] = useState('');
+
+//   useEffect(() => {
+//     fetch(`https://localhost:7282/api/Courses/${courseId}`, {
+//       headers: {
+//         Authorization: `Bearer ${localStorage.getItem('token')}`, // Include the token in the Authorization header
+//       },
+//     })
+//       .then(response => response.json())
+//       .then(data => {
+//         setCourseName(data.courseName);
+//       })
+//       .catch(error => console.error('Error fetching course name:', error));
+//   }, [courseId]);
+
+//   return <span>{courseName}</span>;
+// }
+
+// function FetchStudentName({ studentId }) {
+//   const [studentName, setStudentName] = useState('');
+
+//   useEffect(() => {
+//     fetch(`https://localhost:7282/api/Students/${studentId}`, {
+//       headers: {
+//         Authorization: `Bearer ${localStorage.getItem('token')}`, // Include the token in the Authorization header
+//       },
+//     })
+//       .then(response => response.json())
+//       .then(data => {
+//         setStudentName(data.name);
+//       })
+//       .catch(error => {
+//         console.error('Error fetching student name:', error);
+//         // Display student ID if fetching student name fails
+//         setStudentName(studentId);
+//       });
+//   }, [studentId]);
+
+//   return <span>{studentName}</span>;
+// }
+
+// export default EnrollmentList;
+
+
+
+
+
+
+
 import React, { useState, useEffect } from 'react';
 import { makeStyles, Card, CardContent, Typography, AppBar, Toolbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button } from '@material-ui/core';
 
@@ -6,15 +178,15 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
   },
   appBar: {
-    width: '100%', // Set AppBar width to cover entire page
-    position: 'fixed', // Position AppBar at the top of the page
+    width: '100%',
+    position: 'fixed',
   },
   title: {
-    marginLeft: theme.spacing(2), // Add margin to separate the title from the edge of AppBar
+    marginLeft: theme.spacing(2),
   },
   table: {
     minWidth: 650,
-    marginTop: theme.spacing(8), // Add margin top to prevent content from being hidden behind the AppBar
+    marginTop: theme.spacing(8),
   },
   actionButton: {
     margin: theme.spacing(1),
@@ -33,7 +205,7 @@ function EnrollmentList() {
   const fetchEnrollments = () => {
     fetch('https://localhost:7282/api/Enrollments?registrarStatus=Pending', {
       headers: {
-        Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        Authorization: `Bearer ${token}`,
       },
     })
       .then(response => response.json())
@@ -43,16 +215,35 @@ function EnrollmentList() {
       .catch(error => console.error('Error fetching enrollments:', error));
   };
 
-  const handleAction = (enrollmentId, action) => {
-    const url = `https://localhost:7282/api/Enrollments/${action}?enrollmentId=${enrollmentId}`;
-  
-    fetch(url, {
-      method: 'POST',
+  const handleAction = (studentId, action) => {
+    // First, fetch the enrollment ID based on the student ID
+    fetch(`https://localhost:7282/api/Enrollments?studentId=${studentId}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
       }
     })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch enrollment ID');
+        }
+        return response.json();
+      })
+      .then(enrollments => {
+        // Assuming there's only one enrollment per student, extract the enrollment ID
+        const enrollmentId = enrollments[0].id;
+        
+        // Construct the URL for Approve or Reject action based on the action and enrollment ID
+        const url = `https://localhost:7282/api/Enrollments/${action}?enrollmentId=${enrollmentId}`;
+  
+        // Send a POST request to perform the action
+        return fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      })
       .then(response => {
         if (response.ok) {
           // If the action is successful, update the enrollments list
@@ -63,6 +254,7 @@ function EnrollmentList() {
       })
       .catch(error => console.error('Error performing action:', error));
   };
+  
   
   return (
     <div className={classes.root}>
@@ -126,7 +318,7 @@ function FetchCourseName({ courseId }) {
   useEffect(() => {
     fetch(`https://localhost:7282/api/Courses/${courseId}`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`, // Include the token in the Authorization header
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     })
       .then(response => response.json())
@@ -145,7 +337,7 @@ function FetchStudentName({ studentId }) {
   useEffect(() => {
     fetch(`https://localhost:7282/api/Students/${studentId}`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`, // Include the token in the Authorization header
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     })
       .then(response => response.json())
